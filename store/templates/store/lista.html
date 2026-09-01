@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Productos{% endblock %}
+{% block content %}
+<h1>Productos de la tienda</h1>
+<a href="{% url 'crear_producto' %}">Registrar nuevo producto</a>
+<table border="1">
+    <tr>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Categoría</th>
+        <th>Disponible</th>
+    </tr>
+    {% for producto in productos %}
+    <tr>
+        <td>{{ producto.nombre }}</td>
+        <td>S/ {{ producto.precio }}</td>
+        <td>{{ producto.stock }}</td>
+        <td>{{ producto.categoria }}</td>
+        <td>{% if producto.stock > 0 %}Sí{% else %}Agotado{% endif %}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
