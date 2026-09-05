@@ -1,25 +1,84 @@
-# djyango-lb02
+# Laboratorio 03 - Desarrollo de Aplicaciones Empresariales
+
+## Sistema de Gestión de Gimnasio
+
+Aplicación web desarrollada con Django para gestionar información básica de un gimnasio utilizando Django ORM y SQLite.
 
 ## Problemática
-Muchas tiendas de barrio llevan el control de sus productos de forma manual, lo que dificulta saber qué hay disponible y su precio actual. Esta app permite a un pequeño comerciante registrar y consultar productos.
+
+Un gimnasio realiza de forma manual el registro de clientes, membresías, entrenadores, clases y pagos, lo que puede generar pérdida de información, errores y dificultad para consultar los datos.
+
+La solución propuesta consiste en una aplicación web que permita almacenar y gestionar esta información de manera organizada y persistente.
+
+## Usuarios involucrados
+
+- Administradores
+- Entrenadores
+- Clientes
 
 ## Requisitos funcionales
-1. El sistema debe permitir listar los productos disponibles.
-2. El sistema debe permitir registrar un nuevo producto (nombre, precio, stock, categoría).
-3. El sistema debe mostrar precio y stock actual de cada producto.
-4. El sistema debe indicar si un producto está disponible o agotado.
-5. El sistema debe permitir clasificar productos por categoría.
-6. El sistema debe validar que precio y stock sean valores numéricos positivos.
 
-## App creada
-`store`: contiene el modelo de datos estático (lista de diccionarios en `models.py`), las vistas de listado y creación, el formulario `ProductoForm` y los templates `lista.html` y `formulario.html`, heredando de `base.html`.
+1. Registrar nuevos clientes.
+2. Listar los clientes registrados.
+3. Actualizar la información de un cliente.
+4. Eliminar clientes registrados.
+5. Registrar membresías.
+6. Registrar entrenadores.
+7. Registrar clases y asignarles un entrenador.
+8. Consultar las clases disponibles.
+9. Registrar pagos.
+10. Consultar la información almacenada.
 
-Nota: al no usar base de datos, los productos agregados se pierden al reiniciar el servidor. Esto es esperado según el enunciado del laboratorio.
+## Entidades
 
-## Cómo correr el proyecto
-\`\`\`
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
+La aplicación utiliza los siguientes Models:
+
+- Cliente
+- Membresia
+- Pago
+- Entrenador
+- Clase
+
+Existe una relación de uno a muchos entre `Entrenador` y `Clase`, implementada mediante `ForeignKey`.
+
+## Operaciones CRUD
+
+Se implementaron las siguientes operaciones utilizando Django ORM:
+
+- CREATE: Registro de nuevos datos.
+- READ: Consulta y listado mediante QuerySets.
+- UPDATE: Modificación de registros existentes.
+- DELETE: Eliminación de registros mediante confirmación y petición POST.
+
+## Tecnologías utilizadas
+
+- Python
+- Django
+- Django ORM
+- SQLite
+- HTML
+- Git
+- GitHub
+
+## Ejecución
+
+Activar el entorno virtual:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+.\venv\Scripts\Activate.ps1
+
+Ejecutar el servidor:
+
 python manage.py runserver
-\`\`\`
+
+Ingresar a:
+
+http://127.0.0.1:8000/gimnasio/clientes/
+Aplicación Django
+
+La nueva aplicación desarrollada para la Parte 2 del laboratorio se encuentra en:
+
+gimnasio/
+
+Esta aplicación contiene los Models, Forms, Views, URLs y Templates necesarios para implementar la gestión persistente de los datos.
