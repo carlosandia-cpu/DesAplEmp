@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Entrenadores</title>
+</head>
+<body>
+
+<h1>Entrenadores registrados</h1>
+
+<a href="{% url 'crear_entrenador' %}">Registrar nuevo entrenador</a>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Especialidad</th>
+        <th>Teléfono</th>
+    </tr>
+
+    {% for entrenador in entrenadores %}
+    <tr>
+        <td>{{ entrenador.id }}</td>
+        <td>{{ entrenador.nombre }}</td>
+        <td>{{ entrenador.especialidad }}</td>
+        <td>{{ entrenador.telefono }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">No hay entrenadores registrados.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

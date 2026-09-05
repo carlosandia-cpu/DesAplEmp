@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Membresías</title>
+</head>
+<body>
+
+<h1>Membresías registradas</h1>
+
+<a href="{% url 'crear_membresia' %}">Registrar nueva membresía</a>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Tipo</th>
+        <th>Precio</th>
+        <th>Fecha inicio</th>
+        <th>Fecha fin</th>
+    </tr>
+
+    {% for membresia in membresias %}
+    <tr>
+        <td>{{ membresia.id }}</td>
+        <td>{{ membresia.tipo }}</td>
+        <td>S/ {{ membresia.precio }}</td>
+        <td>{{ membresia.fecha_inicio }}</td>
+        <td>{{ membresia.fecha_fin }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">No hay membresías registradas.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>
