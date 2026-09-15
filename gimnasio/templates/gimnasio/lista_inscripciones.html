@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Inscripciones</title>
+</head>
+
+<body>
+
+    <h1>Inscripciones a clases</h1>
+
+    <a href="{% url 'crear_inscripcion' %}">
+        Registrar nueva inscripción
+    </a>
+
+    <br><br>
+
+    <a href="{% url 'lista_clientes' %}">
+        Volver a clientes
+    </a>
+
+    <br><br>
+
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Clase</th>
+            <th>Fecha de inscripción</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+
+        {% for inscripcion in inscripciones %}
+
+        <tr>
+            <td>{{ inscripcion.id }}</td>
+
+            <td>
+                {{ inscripcion.cliente.nombre }}
+            </td>
+
+            <td>
+                {{ inscripcion.clase.nombre }}
+            </td>
+
+            <td>
+                {{ inscripcion.fecha_inscripcion }}
+            </td>
+
+            <td>
+                {{ inscripcion.estado }}
+            </td>
+
+            <td>
+                <a href="{% url 'editar_inscripcion' inscripcion.id %}">
+                    Editar
+                </a>
+
+                |
+
+                <a href="{% url 'eliminar_inscripcion' inscripcion.id %}">
+                    Eliminar
+                </a>
+            </td>
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td colspan="6">
+                No hay inscripciones registradas.
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</body>
+
+</html>

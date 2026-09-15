@@ -21,12 +21,14 @@ from .forms import (
 
 
 # =========================
-# VISTAS DE CLIENTES
+# CRUD COMPLETO DE CLIENTES
+# CREATE - READ - UPDATE - DELETE
 # =========================
 
 def lista_clientes(request):
-    # Obtiene las inscripciones y las clases relacionadas
-    # con cada cliente.
+    # READ
+    # Obtiene los clientes junto con sus inscripciones
+    # y las clases relacionadas.
     clientes = Cliente.objects.prefetch_related(
         'inscripciones__clase'
     )
@@ -39,6 +41,7 @@ def lista_clientes(request):
 
 
 def crear_cliente(request):
+    # CREATE
     form = ClienteForm(request.POST or None)
 
     if form.is_valid():
@@ -52,6 +55,7 @@ def crear_cliente(request):
 
 
 def editar_cliente(request, id):
+    # UPDATE
     cliente = get_object_or_404(Cliente, id=id)
 
     form = ClienteForm(
@@ -70,6 +74,7 @@ def editar_cliente(request, id):
 
 
 def eliminar_cliente(request, id):
+    # DELETE
     cliente = get_object_or_404(Cliente, id=id)
 
     if request.method == 'POST':
@@ -83,10 +88,12 @@ def eliminar_cliente(request, id):
 
 
 # =========================
-# VISTAS DE MEMBRESÍAS
+# MEMBRESÍAS
+# READ Y CREATE
 # =========================
 
 def lista_membresias(request):
+    # READ
     membresias = Membresia.objects.all()
 
     return render(
@@ -97,6 +104,7 @@ def lista_membresias(request):
 
 
 def crear_membresia(request):
+    # CREATE
     form = MembresiaForm(request.POST or None)
 
     if form.is_valid():
@@ -110,10 +118,12 @@ def crear_membresia(request):
 
 
 # =========================
-# VISTAS DE PAGOS
+# PAGOS
+# READ Y CREATE
 # =========================
 
 def lista_pagos(request):
+    # READ
     pagos = Pago.objects.all()
 
     return render(
@@ -124,6 +134,7 @@ def lista_pagos(request):
 
 
 def crear_pago(request):
+    # CREATE
     form = PagoForm(request.POST or None)
 
     if form.is_valid():
@@ -137,10 +148,12 @@ def crear_pago(request):
 
 
 # =========================
-# VISTAS DE ENTRENADORES
+# ENTRENADORES
+# READ Y CREATE
 # =========================
 
 def lista_entrenadores(request):
+    # READ
     entrenadores = Entrenador.objects.all()
 
     return render(
@@ -151,6 +164,7 @@ def lista_entrenadores(request):
 
 
 def crear_entrenador(request):
+    # CREATE
     form = EntrenadorForm(request.POST or None)
 
     if form.is_valid():
@@ -164,10 +178,13 @@ def crear_entrenador(request):
 
 
 # =========================
-# VISTAS DE CLASES
+# CLASES
+# READ Y CREATE
+# RELACIÓN CON ENTRENADOR
 # =========================
 
 def lista_clases(request):
+    # READ
     # Obtiene cada clase junto con su entrenador.
     clases = Clase.objects.select_related(
         'entrenador'
@@ -181,6 +198,7 @@ def lista_clases(request):
 
 
 def crear_clase(request):
+    # CREATE
     form = ClaseForm(request.POST or None)
 
     if form.is_valid():
@@ -194,11 +212,13 @@ def crear_clase(request):
 
 
 # =========================
-# CRUD DE INSCRIPCIONES
+# CRUD COMPLETO DE INSCRIPCIONES
 # MODELO INTERMEDIO N:M
+# CREATE - READ - UPDATE - DELETE
 # =========================
 
 def lista_inscripciones(request):
+    # READ
     # Obtiene cada inscripción junto con
     # el cliente y la clase relacionados.
     inscripciones = InscripcionClase.objects.select_related(
@@ -214,6 +234,7 @@ def lista_inscripciones(request):
 
 
 def crear_inscripcion(request):
+    # CREATE
     form = InscripcionClaseForm(request.POST or None)
 
     if form.is_valid():
@@ -227,6 +248,7 @@ def crear_inscripcion(request):
 
 
 def editar_inscripcion(request, id):
+    # UPDATE
     inscripcion = get_object_or_404(
         InscripcionClase,
         id=id
@@ -248,6 +270,7 @@ def editar_inscripcion(request, id):
 
 
 def eliminar_inscripcion(request, id):
+    # DELETE
     inscripcion = get_object_or_404(
         InscripcionClase,
         id=id

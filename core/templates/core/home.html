@@ -1,6 +1,35 @@
 {% extends 'base.html' %}
-{% block title %}Inicio{% endblock %}
+
+{% block title %}
+Inicio
+{% endblock %}
+
 {% block content %}
+
 <h1>Proyecto DjangoInicial</h1>
+
 <p>App core funcionando.</p>
+
+<h2>Aplicaciones disponibles</h2>
+
+<ul>
+    <li>
+        <a href="{% url 'lista_clientes' %}">
+            Ir al sistema del gimnasio
+        </a>
+    </li>
+
+    <li>
+        <a href="{% url 'lista_clases' %}">
+            Ver clases
+        </a>
+    </li>
+
+    <li>
+        <a href="{% url 'lista_inscripciones' %}">
+            Ver inscripciones
+        </a>
+    </li>
+</ul>
+
 {% endblock %}
