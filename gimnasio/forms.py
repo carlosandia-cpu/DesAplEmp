@@ -1,5 +1,6 @@
 from django import forms
-from .models import Cliente, Membresia, Pago, Entrenador, Clase
+from .models import Cliente, Membresia, Pago, Entrenador, Clase, InscripcionClase
+
 
 
 class ClienteForm(forms.ModelForm):
@@ -9,7 +10,7 @@ class ClienteForm(forms.ModelForm):
 
 
 class MembresiaForm(forms.ModelForm):
-    class Meta:
+    class Meta: 
         model = Membresia
         fields = '__all__'
 
@@ -30,3 +31,17 @@ class ClaseForm(forms.ModelForm):
     class Meta:
         model = Clase
         fields = '__all__'
+
+# =========================
+# FORMULARIO DE INSCRIPCIONES
+# =========================
+
+class InscripcionClaseForm(forms.ModelForm):
+    class Meta:
+        model = InscripcionClase
+        fields = [
+            'cliente',
+            'clase',
+            'fecha_inscripcion',
+            'estado'
+        ]

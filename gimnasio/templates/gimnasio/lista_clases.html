@@ -1,36 +1,60 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Clases</title>
 </head>
+
 <body>
 
-<h1>Clases registradas</h1>
+    <h1>Clases registradas</h1>
 
-<a href="{% url 'crear_clase' %}">Registrar nueva clase</a>
+    <a href="{% url 'crear_clase' %}">Registrar nueva clase</a>
 
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Horario</th>
-        <th>Entrenador</th>
-    </tr>
+    <h2>Relaciones de clases y entrenadores</h2>
 
-    {% for clase in clases %}
-    <tr>
-        <td>{{ clase.id }}</td>
-        <td>{{ clase.nombre }}</td>
-        <td>{{ clase.horario }}</td>
-        <td>{{ clase.entrenador }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="4">No hay clases registradas.</td>
-    </tr>
-    {% endfor %}
-</table>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Horario</th>
+            <th>Entrenador</th>
+            <th>Clases del entrenador</th>
+        </tr>
+
+        {% for clase in clases %}
+        <tr>
+            <td>{{ clase.id }}</td>
+            <td>{{ clase.nombre }}</td>
+            <td>{{ clase.horario }}</td>
+
+            <!-- ACCESO DIRECTO -->
+            <!-- Clase -> Entrenador mediante ForeignKey -->
+            <td>
+                {{ clase.entrenador.nombre }}
+            </td>
+
+            <!-- ACCESO INVERSO -->
+            <!-- Entrenador -> Clases mediante related_name='clases' -->
+            <td>
+                {% for clase_entrenador in clase.entrenador.clases.all %}
+                    {{ clase_entrenador.nombre }}
+                    {% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    No tiene clases registradas.
+                {% endfor %}
+            </td>
+        </tr>
+
+        {% empty %}
+        <tr>
+            <td colspan="5">No hay clases registradas.</td>
+        </tr>
+        {% endfor %}
+
+    </table>
 
 </body>
+
 </html>

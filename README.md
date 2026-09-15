@@ -82,3 +82,47 @@ La nueva aplicación desarrollada para la Parte 2 del laboratorio se encuentra e
 gimnasio/
 
 Esta aplicación contiene los Models, Forms, Views, URLs y Templates necesarios para implementar la gestión persistente de los datos.
+
+## Laboratorio 04 - Relaciones entre modelos en Django
+
+En este laboratorio se amplió la aplicación de gestión de gimnasio implementando los tres tipos principales de relaciones disponibles en Django ORM.
+
+### Relaciones implementadas
+
+- Relación uno a uno:
+  - Cliente -> PerfilCliente
+  - Implementada mediante OneToOneField.
+
+- Relación uno a muchos:
+  - Entrenador -> Clase
+  - Implementada mediante ForeignKey.
+
+- Relación muchos a muchos:
+  - Cliente <-> Clase
+  - Implementada mediante ManyToManyField utilizando el modelo intermedio InscripcionClase.
+
+### Modelo intermedio
+
+El modelo InscripcionClase almacena información propia de la relación:
+
+- fecha_inscripcion
+- estado
+
+También se implementó un CRUD para registrar, editar y eliminar inscripciones.
+
+### Consultas relacionadas
+
+Se utilizaron:
+
+- select_related() para consultar clases junto con sus entrenadores.
+- prefetch_related() para consultar clientes, inscripciones y clases relacionadas.
+
+### Tecnologías utilizadas
+
+- Python
+- Django
+- Django ORM
+- SQLite
+- HTML
+- Git
+- GitHub
