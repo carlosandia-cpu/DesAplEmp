@@ -155,7 +155,7 @@ def crear_pago(request):
 def lista_entrenadores(request):
     # READ
     entrenadores = Entrenador.objects.all()
-
+    
     return render(
         request,
         'gimnasio/lista_entrenadores.html',
