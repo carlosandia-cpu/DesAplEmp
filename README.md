@@ -49,3 +49,12 @@ Se configuraron clases ModelAdmin para los siguientes modelos:
 - Relación 1:N entre Entrenador y Clase.
 
 La información administrada mediante Django Admin se almacena de manera persistente en la base de datos SQLite.
+
+## Refactorización de Templates (Laboratorio 6)
+
+Se refactorizó la capa de presentación del **Sistema de Gestión del Gimnasio** aplicando modularización y principios DRY:
+
+- **Herencia de Plantillas (`base.html`):** Integración de `{% extends %}` y `{% block content %}` en las plantillas de todas las entidades (*Clientes, Clases, Entrenadores, Inscripciones, Membresías, Pagos*).
+- **Filtros de Formateo:** Aplicación del filtro `|upper` en `lista_clientes.html` para estandarizar la visualización de datos.
+- **Componentes Reutilizables:** Creación del parcial `mensaje_vacio.html` cargado con `{% include %}` en los listados del sistema.
+- **Seguridad:** Verificación del autoescapado de caracteres (*auto-escaping*) nativo en Django contra inyecciones XSS.

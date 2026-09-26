@@ -1,36 +1,29 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Pagos</title>
-</head>
-<body>
+{% extends 'gimnasio/base.html' %}
 
-<h1>Pagos registrados</h1>
+{% block title %}Pagos - Gimnasio{% endblock %}
 
-<a href="{% url 'crear_pago' %}">Registrar nuevo pago</a>
+{% block content %}
+    <h1>Pagos registrados</h1>
 
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>Monto</th>
-        <th>Fecha</th>
-        <th>Método de pago</th>
-    </tr>
+    <a href="{% url 'crear_pago' %}">Registrar nuevo pago</a>
 
-    {% for pago in pagos %}
-    <tr>
-        <td>{{ pago.id }}</td>
-        <td>S/ {{ pago.monto }}</td>
-        <td>{{ pago.fecha }}</td>
-        <td>{{ pago.metodo_pago }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="4">No hay pagos registrados.</td>
-    </tr>
-    {% endfor %}
-</table>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Monto</th>
+            <th>Fecha de pago</th>
+        </tr>
 
-</body>
-</html>
+        {% for pago in pagos %}
+        <tr>
+            <td>{{ pago.id }}</td>
+            <td>{{ pago.cliente.nombre }}</td>
+            <td>S/ {{ pago.monto }}</td>
+            <td>{{ pago.fecha_pago }}</td>
+        </tr>
+        {% empty %}
+            {% include 'gimnasio/mensaje_vacio.html' %}
+        {% endfor %}
+    </table>
+{% endblock %}

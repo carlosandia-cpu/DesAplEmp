@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
+{% extends 'gimnasio/base.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Clases</title>
-</head>
+{% block title %}Clases - Gimnasio{% endblock %}
 
-<body>
-
+{% block content %}
     <h1>Clases registradas</h1>
 
     <a href="{% url 'crear_clase' %}">Registrar nueva clase</a>
@@ -54,7 +49,4 @@
         {% endfor %}
 
     </table>
-
-</body>
-
-</html>
+{% endblock %}

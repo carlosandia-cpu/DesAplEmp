@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Gimnasio{% endblock %}</title>
+</head>
+
+<body>
+
+    <header>
+        <h1>Sistema de Gestión del Gimnasio</h1>
+
+        <nav>
+            <a href="{% url 'lista_clientes' %}">Clientes</a> |
+            <a href="{% url 'lista_clases' %}">Clases</a> |
+            <a href="{% url 'lista_entrenadores' %}">Entrenadores</a> |
+            <a href="{% url 'lista_inscripciones' %}">Inscripciones</a> |
+            <a href="{% url 'lista_membresias' %}">Membresías</a> |
+            <a href="{% url 'lista_pagos' %}">Pagos</a>
+        </nav>
+    </header>
+
+    <hr>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <hr>
+
+    <footer>
+        <p>Sistema de gestión del gimnasio</p>
+    </footer>
+
+</body>
+
+</html>

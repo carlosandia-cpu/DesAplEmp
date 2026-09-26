@@ -1,36 +1,27 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Entrenadores</title>
-</head>
-<body>
+{% extends 'gimnasio/base.html' %}
 
-<h1>Entrenadores registrados</h1>
+{% block title %}Entrenadores - Gimnasio{% endblock %}
 
-<a href="{% url 'crear_entrenador' %}">Registrar nuevo entrenador</a>
+{% block content %}
+    <h1>Entrenadores registrados</h1>
 
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Especialidad</th>
-        <th>Teléfono</th>
-    </tr>
+    <a href="{% url 'crear_entrenador' %}">Registrar nuevo entrenador</a>
 
-    {% for entrenador in entrenadores %}
-    <tr>
-        <td>{{ entrenador.id }}</td>
-        <td>{{ entrenador.nombre }}</td>
-        <td>{{ entrenador.especialidad }}</td>
-        <td>{{ entrenador.telefono }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="4">No hay entrenadores registrados.</td>
-    </tr>
-    {% endfor %}
-</table>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Especialidad</th>
+        </tr>
 
-</body>
-</html>
+        {% for entrenador in entrenadores %}
+        <tr>
+            <td>{{ entrenador.id }}</td>
+            <td>{{ entrenador.nombre }}</td>
+            <td>{{ entrenador.especialidad }}</td>
+        </tr>
+        {% empty %}
+            {% include 'gimnasio/mensaje_vacio.html' %}
+        {% endfor %}
+    </table>
+{% endblock %}

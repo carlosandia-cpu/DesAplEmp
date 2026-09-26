@@ -1,19 +1,16 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ titulo }}</title>
-</head>
-<body>
+{% extends 'gimnasio/base.html' %}
 
-    <h1>{{ titulo }}</h1>
+{% block title %}Formulario - Gimnasio{% endblock %}
 
-    <form method="POST">
+{% block content %}
+    <h2>Formulario de Registro</h2>
+
+    <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-
         <button type="submit">Guardar</button>
     </form>
 
-</body>
-</html>
+    <br>
+    <a href="{% url 'lista_clases' %}">Volver a la lista de clases</a>
+{% endblock %}
