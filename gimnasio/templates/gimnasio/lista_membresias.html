@@ -3,26 +3,34 @@
 {% block title %}Membresías - Gimnasio{% endblock %}
 
 {% block content %}
-    <h1>Membresías registradas</h1>
+    <div class="page-header">
+        <h1>Membresías registradas</h1>
+        <a href="{% url 'crear_membresia' %}" class="btn">+ Registrar nueva membresía</a>
+    </div>
 
-    <a href="{% url 'crear_membresia' %}">Registrar nueva membresía</a>
-
-    <table border="1">
+    <table>
         <tr>
             <th>ID</th>
+            <th>Cliente</th>
             <th>Tipo</th>
             <th>Precio</th>
             <th>Fecha inicio</th>
             <th>Fecha fin</th>
+            <th>Acciones</th>
         </tr>
 
         {% for membresia in membresias %}
         <tr>
             <td>{{ membresia.id }}</td>
+            <td>{{ membresia.cliente.nombre|default:"—" }}</td>
             <td>{{ membresia.tipo }}</td>
-            <td>S/ {{ membresia.precio }}</td>
-            <td>{{ membresia.fecha_inicio }}</td>
-            <td>{{ membresia.fecha_fin }}</td>
+            <td>S/ {{ membresia.precio|floatformat:2 }}</td>
+            <td>{{ membresia.fecha_inicio|date:"d/m/Y" }}</td>
+            <td>{{ membresia.fecha_fin|date:"d/m/Y" }}</td>
+            <td class="acciones">
+                <a href="{% url 'editar_membresia' membresia.id %}" class="btn btn-sm btn-secondary">Editar</a>
+                <a href="{% url 'eliminar_membresia' membresia.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+            </td>
         </tr>
         {% empty %}
             {% include 'gimnasio/mensaje_vacio.html' %}

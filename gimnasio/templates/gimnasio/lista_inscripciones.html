@@ -3,16 +3,19 @@
 {% block title %}Inscripciones - Gimnasio{% endblock %}
 
 {% block content %}
-    <h1>Inscripciones registradas</h1>
+    <div class="page-header">
+        <h1>Inscripciones registradas</h1>
+        <a href="{% url 'crear_inscripcion' %}" class="btn">+ Registrar nueva inscripción</a>
+    </div>
 
-    <a href="{% url 'crear_inscripcion' %}">Registrar nueva inscripción</a>
-
-    <table border="1">
+    <table>
         <tr>
             <th>ID</th>
             <th>Cliente</th>
             <th>Clase</th>
             <th>Fecha de inscripción</th>
+            <th>Estado</th>
+            <th>Acciones</th>
         </tr>
 
         {% for inscripcion in inscripciones %}
@@ -20,10 +23,15 @@
             <td>{{ inscripcion.id }}</td>
             <td>{{ inscripcion.cliente.nombre }}</td>
             <td>{{ inscripcion.clase.nombre }}</td>
-            <td>{{ inscripcion.fecha }}</td>
+            <td>{{ inscripcion.fecha_inscripcion|date:"d/m/Y" }}</td>
+            <td>{{ inscripcion.estado }}</td>
+            <td class="acciones">
+                <a href="{% url 'editar_inscripcion' inscripcion.id %}" class="btn btn-sm btn-secondary">Editar</a>
+                <a href="{% url 'eliminar_inscripcion' inscripcion.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+            </td>
         </tr>
         {% empty %}
-            <!-- EXTRAÍDO Y REUTILIZADO CON INCLUDE -->
+            {# EXTRAÍDO Y REUTILIZADO CON INCLUDE #}
             {% include 'gimnasio/mensaje_vacio.html' %}
         {% endfor %}
     </table>

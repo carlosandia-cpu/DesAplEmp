@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 
 from .models import (
     Cliente,
@@ -16,275 +17,211 @@ from .forms import (
     PagoForm,
     EntrenadorForm,
     ClaseForm,
-    InscripcionClaseForm
+    InscripcionClaseForm,
+    PerfilClienteForm
 )
 
 
 # =========================
-# CRUD COMPLETO DE CLIENTES
-# CREATE - READ - UPDATE - DELETE
+# FUNCIONES AUXILIARES
+# =========================
+
+def _guardar_form(request, form_class, instancia, destino, titulo):
+    # Sirve para CREATE (instancia=None) y para UPDATE (instancia=objeto).
+    form = form_class(request.POST or None, instance=instancia)
+
+    if form.is_valid():
+        form.save()
+        return redirect(destino)
+
+    return render(request, 'gimnasio/formulario.html', {
+        'form': form,
+        'titulo': titulo,
+        'volver': destino
+    })
+
+
+def _confirmar_eliminar(request, objeto, tipo, destino):
+    # DELETE: primero pide confirmación (GET) y elimina al confirmar (POST).
+    if request.method == 'POST':
+        objeto.delete()
+        return redirect(destino)
+
+    return render(request, 'gimnasio/confirmar_eliminar.html', {
+        'objeto': objeto,
+        'tipo': tipo,
+        'volver': destino
+    })
+
+
+# =========================
+# CLIENTES
 # =========================
 
 def lista_clientes(request):
-    # READ
-    # Obtiene los clientes junto con sus inscripciones
-    # y las clases relacionadas.
-    clientes = Cliente.objects.prefetch_related(
-        'inscripciones__clase'
-    )
-
-    return render(
-        request,
-        'gimnasio/lista_clientes.html',
-        {'clientes': clientes}
-    )
+    clientes = Cliente.objects.prefetch_related('inscripciones__clase')
+    return render(request, 'gimnasio/lista_clientes.html', {'clientes': clientes})
 
 
 def crear_cliente(request):
-    # CREATE
-    form = ClienteForm(request.POST or None)
-
-    if form.is_valid():
-        form.save()
-        return redirect('lista_clientes')
-
-    return render(request, 'gimnasio/formulario.html', {
-        'form': form,
-        'titulo': 'Registrar cliente'
-    })
+    return _guardar_form(request, ClienteForm, None, 'lista_clientes', 'Registrar cliente')
 
 
 def editar_cliente(request, id):
-    # UPDATE
     cliente = get_object_or_404(Cliente, id=id)
-
-    form = ClienteForm(
-        request.POST or None,
-        instance=cliente
-    )
-
-    if form.is_valid():
-        form.save()
-        return redirect('lista_clientes')
-
-    return render(request, 'gimnasio/formulario.html', {
-        'form': form,
-        'titulo': 'Editar cliente'
-    })
+    return _guardar_form(request, ClienteForm, cliente, 'lista_clientes', 'Editar cliente')
 
 
 def eliminar_cliente(request, id):
-    # DELETE
     cliente = get_object_or_404(Cliente, id=id)
+    return _confirmar_eliminar(request, cliente, 'cliente', 'lista_clientes')
 
-    if request.method == 'POST':
-        cliente.delete()
-        return redirect('lista_clientes')
 
-    return render(request, 'gimnasio/confirmar_eliminar.html', {
-        'objeto': cliente,
-        'tipo': 'cliente'
+def detalle_cliente(request, id):
+    # Trae al cliente con sus relaciones en pocas consultas.
+    cliente = get_object_or_404(
+        Cliente.objects.prefetch_related('membresias', 'pagos', 'inscripciones__clase'),
+        id=id
+    )
+    # RELACIÓN 1 A 1: puede que el cliente todavía no tenga perfil.
+    perfil = PerfilCliente.objects.filter(cliente=cliente).first()
+
+    return render(request, 'gimnasio/detalle_cliente.html', {
+        'cliente': cliente,
+        'perfil': perfil
+    })
+
+
+def editar_perfil(request, id):
+    # Sirve para crear el perfil si no existe y para editarlo si ya existe.
+    cliente = get_object_or_404(Cliente, id=id)
+    perfil = PerfilCliente.objects.filter(cliente=cliente).first()
+
+    form = PerfilClienteForm(request.POST or None, instance=perfil)
+
+    if form.is_valid():
+        nuevo = form.save(commit=False)
+        nuevo.cliente = cliente
+        nuevo.save()
+        return redirect('detalle_cliente', id=cliente.id)
+
+    return render(request, 'gimnasio/formulario.html', {
+        'form': form,
+        'titulo': f'Perfil de {cliente.nombre}',
+        'volver_url': reverse('detalle_cliente', args=[cliente.id])
     })
 
 
 # =========================
 # MEMBRESÍAS
-# READ Y CREATE
 # =========================
 
 def lista_membresias(request):
-    # READ
     membresias = Membresia.objects.all()
-
-    return render(
-        request,
-        'gimnasio/lista_membresias.html',
-        {'membresias': membresias}
-    )
+    return render(request, 'gimnasio/lista_membresias.html', {'membresias': membresias})
 
 
 def crear_membresia(request):
-    # CREATE
-    form = MembresiaForm(request.POST or None)
+    return _guardar_form(request, MembresiaForm, None, 'lista_membresias', 'Registrar membresía')
 
-    if form.is_valid():
-        form.save()
-        return redirect('lista_membresias')
 
-    return render(request, 'gimnasio/formulario.html', {
-        'form': form,
-        'titulo': 'Registrar membresía'
-    })
+def editar_membresia(request, id):
+    membresia = get_object_or_404(Membresia, id=id)
+    return _guardar_form(request, MembresiaForm, membresia, 'lista_membresias', 'Editar membresía')
+
+
+def eliminar_membresia(request, id):
+    membresia = get_object_or_404(Membresia, id=id)
+    return _confirmar_eliminar(request, membresia, 'membresía', 'lista_membresias')
 
 
 # =========================
 # PAGOS
-# READ Y CREATE
 # =========================
 
 def lista_pagos(request):
-    # READ
     pagos = Pago.objects.all()
-
-    return render(
-        request,
-        'gimnasio/lista_pagos.html',
-        {'pagos': pagos}
-    )
+    return render(request, 'gimnasio/lista_pagos.html', {'pagos': pagos})
 
 
 def crear_pago(request):
-    # CREATE
-    form = PagoForm(request.POST or None)
+    return _guardar_form(request, PagoForm, None, 'lista_pagos', 'Registrar pago')
 
-    if form.is_valid():
-        form.save()
-        return redirect('lista_pagos')
 
-    return render(request, 'gimnasio/formulario.html', {
-        'form': form,
-        'titulo': 'Registrar pago'
-    })
+def editar_pago(request, id):
+    pago = get_object_or_404(Pago, id=id)
+    return _guardar_form(request, PagoForm, pago, 'lista_pagos', 'Editar pago')
+
+
+def eliminar_pago(request, id):
+    pago = get_object_or_404(Pago, id=id)
+    return _confirmar_eliminar(request, pago, 'pago', 'lista_pagos')
 
 
 # =========================
 # ENTRENADORES
-# READ Y CREATE
 # =========================
 
 def lista_entrenadores(request):
-    # READ
     entrenadores = Entrenador.objects.all()
-    
-    return render(
-        request,
-        'gimnasio/lista_entrenadores.html',
-        {'entrenadores': entrenadores}
-    )
+    return render(request, 'gimnasio/lista_entrenadores.html', {'entrenadores': entrenadores})
 
 
 def crear_entrenador(request):
-    # CREATE
-    form = EntrenadorForm(request.POST or None)
+    return _guardar_form(request, EntrenadorForm, None, 'lista_entrenadores', 'Registrar entrenador')
 
-    if form.is_valid():
-        form.save()
-        return redirect('lista_entrenadores')
 
-    return render(request, 'gimnasio/formulario.html', {
-        'form': form,
-        'titulo': 'Registrar entrenador'
-    })
+def editar_entrenador(request, id):
+    entrenador = get_object_or_404(Entrenador, id=id)
+    return _guardar_form(request, EntrenadorForm, entrenador, 'lista_entrenadores', 'Editar entrenador')
+
+
+def eliminar_entrenador(request, id):
+    entrenador = get_object_or_404(Entrenador, id=id)
+    return _confirmar_eliminar(request, entrenador, 'entrenador', 'lista_entrenadores')
 
 
 # =========================
 # CLASES
-# READ Y CREATE
-# RELACIÓN CON ENTRENADOR
 # =========================
 
 def lista_clases(request):
-    # READ
-    # Obtiene cada clase junto con su entrenador.
-    clases = Clase.objects.select_related(
-        'entrenador'
-    )
-
-    return render(
-        request,
-        'gimnasio/lista_clases.html',
-        {'clases': clases}
-    )
+    clases = Clase.objects.select_related('entrenador')
+    return render(request, 'gimnasio/lista_clases.html', {'clases': clases})
 
 
 def crear_clase(request):
-    # CREATE
-    form = ClaseForm(request.POST or None)
+    return _guardar_form(request, ClaseForm, None, 'lista_clases', 'Registrar clase')
 
-    if form.is_valid():
-        form.save()
-        return redirect('lista_clases')
 
-    return render(request, 'gimnasio/formulario.html', {
-        'form': form,
-        'titulo': 'Registrar clase'
-    })
+def editar_clase(request, id):
+    clase = get_object_or_404(Clase, id=id)
+    return _guardar_form(request, ClaseForm, clase, 'lista_clases', 'Editar clase')
+
+
+def eliminar_clase(request, id):
+    clase = get_object_or_404(Clase, id=id)
+    return _confirmar_eliminar(request, clase, 'clase', 'lista_clases')
 
 
 # =========================
-# CRUD COMPLETO DE INSCRIPCIONES
-# MODELO INTERMEDIO N:M
-# CREATE - READ - UPDATE - DELETE
+# INSCRIPCIONES (MODELO INTERMEDIO N:M)
 # =========================
 
 def lista_inscripciones(request):
-    # READ
-    # Obtiene cada inscripción junto con
-    # el cliente y la clase relacionados.
-    inscripciones = InscripcionClase.objects.select_related(
-        'cliente',
-        'clase'
-    )
-
-    return render(
-        request,
-        'gimnasio/lista_inscripciones.html',
-        {'inscripciones': inscripciones}
-    )
+    inscripciones = InscripcionClase.objects.select_related('cliente', 'clase')
+    return render(request, 'gimnasio/lista_inscripciones.html', {'inscripciones': inscripciones})
 
 
 def crear_inscripcion(request):
-    # CREATE
-    form = InscripcionClaseForm(request.POST or None)
-
-    if form.is_valid():
-        form.save()
-        return redirect('lista_inscripciones')
-
-    return render(request, 'gimnasio/formulario.html', {
-        'form': form,
-        'titulo': 'Registrar inscripción'
-    })
+    return _guardar_form(request, InscripcionClaseForm, None, 'lista_inscripciones', 'Registrar inscripción')
 
 
 def editar_inscripcion(request, id):
-    # UPDATE
-    inscripcion = get_object_or_404(
-        InscripcionClase,
-        id=id
-    )
-
-    form = InscripcionClaseForm(
-        request.POST or None,
-        instance=inscripcion
-    )
-
-    if form.is_valid():
-        form.save()
-        return redirect('lista_inscripciones')
-
-    return render(request, 'gimnasio/formulario.html', {
-        'form': form,
-        'titulo': 'Editar inscripción'
-    })
+    inscripcion = get_object_or_404(InscripcionClase, id=id)
+    return _guardar_form(request, InscripcionClaseForm, inscripcion, 'lista_inscripciones', 'Editar inscripción')
 
 
 def eliminar_inscripcion(request, id):
-    # DELETE
-    inscripcion = get_object_or_404(
-        InscripcionClase,
-        id=id
-    )
-
-    if request.method == 'POST':
-        inscripcion.delete()
-        return redirect('lista_inscripciones')
-
-    return render(
-        request,
-        'gimnasio/confirmar_eliminar.html',
-        {
-            'objeto': inscripcion,
-            'tipo': 'inscripción'
-        }
-    )
+    inscripcion = get_object_or_404(InscripcionClase, id=id)
+    return _confirmar_eliminar(request, inscripcion, 'inscripción', 'lista_inscripciones')

@@ -3,24 +3,34 @@
 {% block title %}Pagos - Gimnasio{% endblock %}
 
 {% block content %}
-    <h1>Pagos registrados</h1>
+    <div class="page-header">
+        <h1>Pagos registrados</h1>
+        <a href="{% url 'crear_pago' %}" class="btn">+ Registrar nuevo pago</a>
+    </div>
 
-    <a href="{% url 'crear_pago' %}">Registrar nuevo pago</a>
-
-    <table border="1">
+    <table>
         <tr>
             <th>ID</th>
             <th>Cliente</th>
+            <th>Membresía</th>
             <th>Monto</th>
-            <th>Fecha de pago</th>
+            <th>Fecha</th>
+            <th>Método</th>
+            <th>Acciones</th>
         </tr>
 
         {% for pago in pagos %}
         <tr>
             <td>{{ pago.id }}</td>
-            <td>{{ pago.cliente.nombre }}</td>
-            <td>S/ {{ pago.monto }}</td>
-            <td>{{ pago.fecha_pago }}</td>
+            <td>{{ pago.cliente.nombre|default:"—" }}</td>
+            <td>{{ pago.membresia.tipo|default:"—" }}</td>
+            <td>S/ {{ pago.monto|floatformat:2 }}</td>
+            <td>{{ pago.fecha|date:"d/m/Y" }}</td>
+            <td>{{ pago.metodo_pago }}</td>
+            <td class="acciones">
+                <a href="{% url 'editar_pago' pago.id %}" class="btn btn-sm btn-secondary">Editar</a>
+                <a href="{% url 'eliminar_pago' pago.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+            </td>
         </tr>
         {% empty %}
             {% include 'gimnasio/mensaje_vacio.html' %}

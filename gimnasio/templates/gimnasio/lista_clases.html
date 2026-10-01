@@ -3,50 +3,46 @@
 {% block title %}Clases - Gimnasio{% endblock %}
 
 {% block content %}
-    <h1>Clases registradas</h1>
+    <div class="page-header">
+        <h1>Clases registradas</h1>
+        <a href="{% url 'crear_clase' %}" class="btn">+ Registrar nueva clase</a>
+    </div>
 
-    <a href="{% url 'crear_clase' %}">Registrar nueva clase</a>
-
-    <h2>Relaciones de clases y entrenadores</h2>
-
-    <table border="1">
+    <table>
         <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Horario</th>
             <th>Entrenador</th>
             <th>Clases del entrenador</th>
+            <th>Acciones</th>
         </tr>
 
         {% for clase in clases %}
         <tr>
             <td>{{ clase.id }}</td>
             <td>{{ clase.nombre }}</td>
-            <td>{{ clase.horario }}</td>
+            <td>{{ clase.horario|date:"d/m/Y H:i" }}</td>
 
-            <!-- ACCESO DIRECTO -->
-            <!-- Clase -> Entrenador mediante ForeignKey -->
-            <td>
-                {{ clase.entrenador.nombre }}
-            </td>
+            {# ACCESO DIRECTO: Clase -> Entrenador mediante ForeignKey #}
+            <td>{{ clase.entrenador.nombre }}</td>
 
-            <!-- ACCESO INVERSO -->
-            <!-- Entrenador -> Clases mediante related_name='clases' -->
+            {# ACCESO INVERSO: Entrenador -> Clases mediante related_name='clases' #}
             <td>
                 {% for clase_entrenador in clase.entrenador.clases.all %}
-                    {{ clase_entrenador.nombre }}
-                    {% if not forloop.last %}, {% endif %}
+                    {{ clase_entrenador.nombre }}{% if not forloop.last %}, {% endif %}
                 {% empty %}
                     No tiene clases registradas.
                 {% endfor %}
             </td>
-        </tr>
 
+            <td class="acciones">
+                <a href="{% url 'editar_clase' clase.id %}" class="btn btn-sm btn-secondary">Editar</a>
+                <a href="{% url 'eliminar_clase' clase.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+            </td>
+        </tr>
         {% empty %}
-        <tr>
-            <td colspan="5">No hay clases registradas.</td>
-        </tr>
+            {% include 'gimnasio/mensaje_vacio.html' %}
         {% endfor %}
-
     </table>
 {% endblock %}

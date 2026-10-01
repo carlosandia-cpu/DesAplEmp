@@ -3,15 +3,18 @@
 {% block title %}Entrenadores - Gimnasio{% endblock %}
 
 {% block content %}
-    <h1>Entrenadores registrados</h1>
+    <div class="page-header">
+        <h1>Entrenadores registrados</h1>
+        <a href="{% url 'crear_entrenador' %}" class="btn">+ Registrar nuevo entrenador</a>
+    </div>
 
-    <a href="{% url 'crear_entrenador' %}">Registrar nuevo entrenador</a>
-
-    <table border="1">
+    <table>
         <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Especialidad</th>
+            <th>Teléfono</th>
+            <th>Acciones</th>
         </tr>
 
         {% for entrenador in entrenadores %}
@@ -19,6 +22,11 @@
             <td>{{ entrenador.id }}</td>
             <td>{{ entrenador.nombre }}</td>
             <td>{{ entrenador.especialidad }}</td>
+            <td>{{ entrenador.telefono }}</td>
+            <td class="acciones">
+                <a href="{% url 'editar_entrenador' entrenador.id %}" class="btn btn-sm btn-secondary">Editar</a>
+                <a href="{% url 'eliminar_entrenador' entrenador.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+            </td>
         </tr>
         {% empty %}
             {% include 'gimnasio/mensaje_vacio.html' %}

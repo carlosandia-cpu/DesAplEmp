@@ -1,6 +1,5 @@
 from django import forms
-from .models import Cliente, Membresia, Pago, Entrenador, Clase, InscripcionClase
-
+from .models import Cliente, Membresia, Pago, Entrenador, Clase, InscripcionClase, PerfilCliente
 
 
 class ClienteForm(forms.ModelForm):
@@ -10,7 +9,7 @@ class ClienteForm(forms.ModelForm):
 
 
 class MembresiaForm(forms.ModelForm):
-    class Meta: 
+    class Meta:
         model = Membresia
         fields = '__all__'
 
@@ -32,6 +31,7 @@ class ClaseForm(forms.ModelForm):
         model = Clase
         fields = '__all__'
 
+
 # =========================
 # FORMULARIO DE INSCRIPCIONES
 # =========================
@@ -45,3 +45,14 @@ class InscripcionClaseForm(forms.ModelForm):
             'fecha_inscripcion',
             'estado'
         ]
+
+
+# =========================
+# FORMULARIO DEL PERFIL (RELACIÓN 1 A 1)
+# El campo 'cliente' se excluye: lo asigna la vista.
+# =========================
+
+class PerfilClienteForm(forms.ModelForm):
+    class Meta:
+        model = PerfilCliente
+        fields = ['contacto_emergencia', 'telefono_emergencia', 'observaciones']
