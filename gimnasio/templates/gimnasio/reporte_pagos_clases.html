@@ -1,0 +1,72 @@
+{% extends 'gimnasio/base.html' %}
+
+{% block title %}Reporte de pagos y clases - Gimnasio{% endblock %}
+
+{% block content %}
+    <style>
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 8px; }
+        .stat { border: 1px solid var(--border); border-radius: 10px; padding: 16px; background: #f9fafb; }
+        .stat .valor { font-size: 1.7rem; font-weight: 700; color: var(--accent-dark); }
+        .stat .etiqueta { color: var(--muted); font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
+    </style>
+
+    <div class="page-header">
+        <h1>Reporte de pagos y clases</h1>
+        <a href="{% url 'reporte' %}" class="btn btn-secondary">← Reporte de inscripciones</a>
+    </div>
+
+    {# REPORTE 1: resultados de aggregate() sobre Pago #}
+    <h2>Resumen de pagos</h2>
+    <div class="stats">
+        <div class="stat">
+            <div class="valor">S/ {{ resumen_pagos.total_cobrado|default_if_none:0|floatformat:2 }}</div>
+            <div class="etiqueta">Total cobrado</div>
+        </div>
+        <div class="stat">
+            <div class="valor">S/ {{ resumen_pagos.pago_promedio|default_if_none:0|floatformat:2 }}</div>
+            <div class="etiqueta">Pago promedio</div>
+        </div>
+        <div class="stat">
+            <div class="valor">{{ resumen_pagos.cantidad }}</div>
+            <div class="etiqueta">Pagos registrados</div>
+        </div>
+    </div>
+
+    {# REPORTE 3: resultados de values().annotate() agrupado por método #}
+    <h2>Pagos por método</h2>
+    <table>
+        <tr>
+            <th>Método</th>
+            <th>Cantidad</th>
+            <th>Total</th>
+        </tr>
+        {% for fila in por_metodo %}
+        <tr>
+            <td>{{ fila.metodo_pago }}</td>
+            <td>{{ fila.cantidad }}</td>
+            <td>S/ {{ fila.total|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+            {% include 'gimnasio/mensaje_vacio.html' %}
+        {% endfor %}
+    </table>
+
+    {# REPORTE 2: resultados de annotate() sobre Clase #}
+    <h2>Ingresos por clase</h2>
+    <table>
+        <tr>
+            <th>Clase</th>
+            <th>Inscritos</th>
+            <th>Ingresos (sesiones × precio)</th>
+        </tr>
+        {% for clase in clases %}
+        <tr>
+            <td>{{ clase.nombre }}</td>
+            <td>{{ clase.inscritos }}</td>
+            <td>S/ {{ clase.ingresos|default_if_none:0|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+            {% include 'gimnasio/mensaje_vacio.html' %}
+        {% endfor %}
+    </table>
+{% endblock %}

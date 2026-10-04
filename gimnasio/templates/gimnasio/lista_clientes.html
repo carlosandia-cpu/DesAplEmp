@@ -8,6 +8,14 @@
         <a href="{% url 'crear_cliente' %}" class="btn">+ Registrar nuevo cliente</a>
     </div>
 
+    {# LAB 07: filtros que usan los métodos del QuerySet personalizado #}
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
+        <a href="{% url 'lista_clientes' %}" class="btn btn-sm{% if filtro != 'todos' %} btn-secondary{% endif %}">Todos</a>
+        <a href="?filtro=activos" class="btn btn-sm{% if filtro != 'activos' %} btn-secondary{% endif %}">Con inscripción activa</a>
+        <a href="?filtro=vigentes" class="btn btn-sm{% if filtro != 'vigentes' %} btn-secondary{% endif %}">Con membresía vigente</a>
+        <a href="?filtro=pagos_mes" class="btn btn-sm{% if filtro != 'pagos_mes' %} btn-secondary{% endif %}">Con pagos este mes</a>
+    </div>
+
     {# COMENTARIO DE DOCUMENTACIÓN: Se aplica el filtro 'upper' al nombre para estandarizar la vista en mayúsculas sin alterar la base de datos #}
     <table>
         <tr>

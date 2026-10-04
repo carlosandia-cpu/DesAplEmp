@@ -51,6 +51,13 @@ urlpatterns = [
     # =========================
     path('inscripciones/', views.lista_inscripciones, name='lista_inscripciones'),
     path('inscripciones/nueva/', views.crear_inscripcion, name='crear_inscripcion'),
+    path('inscripciones/inscribir/', views.inscribir_cliente, name='inscribir_cliente'),
     path('inscripciones/<int:id>/editar/', views.editar_inscripcion, name='editar_inscripcion'),
     path('inscripciones/<int:id>/eliminar/', views.eliminar_inscripcion, name='eliminar_inscripcion'),
+
+    # =========================
+    # LAB 07: REPORTE
+    # =========================
+    path('reporte/', views.reporte, name='reporte'),
+    path('reporte/pagos-clases/', views.reporte_pagos_clases, name='reporte_pagos_clases'),
 ]

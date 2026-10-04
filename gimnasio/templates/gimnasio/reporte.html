@@ -1,0 +1,69 @@
+{% extends 'gimnasio/base.html' %}
+
+{% block title %}Reporte - Gimnasio{% endblock %}
+
+{% block content %}
+    <style>
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 8px; }
+        .stat { border: 1px solid var(--border); border-radius: 10px; padding: 16px; background: #f9fafb; }
+        .stat .valor { font-size: 1.7rem; font-weight: 700; color: var(--accent-dark); }
+        .stat .etiqueta { color: var(--muted); font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
+    </style>
+
+    <div class="page-header">
+        <h1>Reporte de inscripciones</h1>
+    </div>
+
+    {# EJERCICIO 4: resultados de aggregate() #}
+    <h2>Totales generales</h2>
+    <div class="stats">
+        <div class="stat">
+            <div class="valor">S/ {{ totales.total_ingresos|default_if_none:0|floatformat:2 }}</div>
+            <div class="etiqueta">Ingresos (sesiones × precio)</div>
+        </div>
+        <div class="stat">
+            <div class="valor">{{ totales.total_sesiones|default_if_none:0 }}</div>
+            <div class="etiqueta">Sesiones contratadas</div>
+        </div>
+        <div class="stat">
+            <div class="valor">{{ totales.total_inscripciones }}</div>
+            <div class="etiqueta">Inscripciones</div>
+        </div>
+    </div>
+
+    {# EJERCICIO 5: resultados de values().annotate() #}
+    <h2>Inscripciones por estado</h2>
+    <table>
+        <tr>
+            <th>Estado</th>
+            <th>Cantidad</th>
+            <th>Porcentaje</th>
+        </tr>
+        {% for fila in por_estado %}
+        <tr>
+            <td>{{ fila.estado }}</td>
+            <td>{{ fila.cantidad }}</td>
+            <td>{% widthratio fila.cantidad totales.total_inscripciones 100 %}%</td>
+        </tr>
+        {% empty %}
+            {% include 'gimnasio/mensaje_vacio.html' %}
+        {% endfor %}
+    </table>
+
+    {# EJERCICIO 5: resultados de annotate() #}
+    <h2>Inscripciones por cliente</h2>
+    <table>
+        <tr>
+            <th>Cliente</th>
+            <th>Inscripciones</th>
+        </tr>
+        {% for cliente in clientes %}
+        <tr>
+            <td>{{ cliente.nombre|upper }}</td>
+            <td>{{ cliente.total_inscripciones }}</td>
+        </tr>
+        {% empty %}
+            {% include 'gimnasio/mensaje_vacio.html' %}
+        {% endfor %}
+    </table>
+{% endblock %}

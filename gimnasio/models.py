@@ -1,10 +1,70 @@
 from django.db import models
+from django.db.models import Count
+from django.utils import timezone
 
+
+# =========================================================
+# LAB 07 - EJERCICIO 7
+# QUERYSET PERSONALIZADO PARA LA ENTIDAD PRINCIPAL (CLIENTE)
+# Cada método devuelve un QuerySet, por eso se pueden encadenar.
+# =========================================================
+class ClienteQuerySet(models.QuerySet):
+
+    def con_inscripciones_activas(self):
+        # Regla de negocio: clientes con al menos una inscripción 'Activa'.
+        return self.filter(inscripciones__estado='Activa').distinct()
+
+    def con_membresia_vigente(self):
+        # Regla de negocio: clientes con una membresía que incluye la fecha de hoy.
+        hoy = timezone.localdate()
+        return self.filter(
+            membresias__fecha_inicio__lte=hoy,
+            membresias__fecha_fin__gte=hoy
+        ).distinct()
+
+    def con_pagos_del_mes(self):
+        # Regla de negocio: clientes con pagos registrados en el mes actual.
+        hoy = timezone.localdate()
+        return self.filter(
+            pagos__fecha__year=hoy.year,
+            pagos__fecha__month=hoy.month
+        ).distinct()
+
+    def con_total_inscripciones(self):
+        # Agrega a cada cliente el número de inscripciones que tiene.
+        return self.annotate(
+            total_inscripciones=Count('inscripciones', distinct=True)
+        )
+# =========================================================
+# LAB 07 - EJERCICIO 12
+# QUERYSET PERSONALIZADO PARA CLASE
+# =========================================================
+from django.db.models import Sum, F, DecimalField
+
+
+class ClaseQuerySet(models.QuerySet):
+
+    def proximas(self):
+        # Regla de negocio: clases cuyo horario aún no ha pasado.
+        return self.filter(horario__gte=timezone.now())
+
+    def con_cupos(self):
+        # Regla de negocio: clases que todavía tienen cupos libres.
+        return self.filter(cupos_disponibles__gt=0)
+
+    def con_ocupacion(self):
+        # Agrega a cada clase cuántos inscritos tiene y cuánto ingresa.
+        return self.annotate(
+            inscritos=Count('inscripciones'),
+            ingresos=Sum(
+                F('inscripciones__sesiones') * F('inscripciones__precio_sesion'),
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )
+        )
 
 # =========================================================
 # 1. MODELO CLIENTE
 # =========================================================
-# Guarda la información principal de cada cliente.
 class Cliente(models.Model):
     id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
@@ -12,16 +72,17 @@ class Cliente(models.Model):
     correo = models.EmailField()
     telefono = models.CharField(max_length=15)
 
+    # as_manager() copia los métodos del QuerySet al manager:
+    # Cliente.objects.con_inscripciones_activas() funciona directamente.
+    objects = ClienteQuerySet.as_manager()
+
     def __str__(self):
         return self.nombre
 
 
 # =========================================================
-# 2. PERFIL DEL CLIENTE
-# RELACIÓN 1 A 1
-# Cliente 1 ---- 1 PerfilCliente
+# 2. PERFIL DEL CLIENTE (RELACIÓN 1 A 1)
 # =========================================================
-# Guarda información complementaria del cliente.
 class PerfilCliente(models.Model):
     cliente = models.OneToOneField(
         Cliente,
@@ -33,15 +94,17 @@ class PerfilCliente(models.Model):
     telefono_emergencia = models.CharField(max_length=15)
     observaciones = models.TextField(blank=True)
 
+    class Meta:
+        verbose_name = 'Perfil de cliente'
+        verbose_name_plural = 'Perfiles de clientes'
+
     def __str__(self):
         return f"Perfil de {self.cliente.nombre}"
 
 
 # =========================================================
-# 3. MODELO MEMBRESÍA
-# Cliente 1 ---- N Membresia
+# 3. MODELO MEMBRESÍA (Cliente 1 ---- N Membresia)
 # =========================================================
-# Registra las membresías adquiridas por los clientes.
 class Membresia(models.Model):
     id = models.AutoField(primary_key=True)
 
@@ -58,6 +121,10 @@ class Membresia(models.Model):
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
 
+    class Meta:
+        verbose_name = 'Membresía'
+        verbose_name_plural = 'Membresías'
+
     def __str__(self):
         return self.tipo
 
@@ -67,7 +134,6 @@ class Membresia(models.Model):
 # Cliente 1 ---- N Pago
 # Membresia 1 ---- N Pago
 # =========================================================
-# Registra los pagos realizados por los clientes.
 class Pago(models.Model):
     id = models.AutoField(primary_key=True)
 
@@ -104,15 +170,17 @@ class Entrenador(models.Model):
     especialidad = models.CharField(max_length=100)
     telefono = models.CharField(max_length=15)
 
+    class Meta:
+        verbose_name = 'Entrenador'
+        verbose_name_plural = 'Entrenadores'
+
     def __str__(self):
         return self.nombre
 
 
 # =========================================================
 # 6. MODELO SALA
-# Sala 1 ---- N Clase
 # =========================================================
-# Representa los ambientes físicos del gimnasio.
 class Sala(models.Model):
     id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
@@ -134,6 +202,9 @@ class Clase(models.Model):
     nombre = models.CharField(max_length=100)
     horario = models.DateTimeField()
 
+    # Campo entero que se descuenta con F() al inscribir (Lab 07)
+    cupos_disponibles = models.PositiveIntegerField(default=20)
+
     entrenador = models.ForeignKey(
         Entrenador,
         on_delete=models.CASCADE,
@@ -153,17 +224,24 @@ class Clase(models.Model):
         through='InscripcionClase',
         related_name='clases_inscritas'
     )
+    
+    # LAB 07 - EJERCICIO 12: manager con los métodos del QuerySet
+    objects = ClaseQuerySet.as_manager()
 
     def __str__(self):
         return self.nombre
 
 
 # =========================================================
-# 8. MODELO INSCRIPCIÓN DE CLASE
-# MODELO INTERMEDIO N:M
-# Cliente N ---- M Clase
+# 8. MODELO INSCRIPCIÓN DE CLASE (MODELO INTERMEDIO N:M)
 # =========================================================
 class InscripcionClase(models.Model):
+    ESTADOS = [
+        ('Activa', 'Activa'),
+        ('Completada', 'Completada'),
+        ('Cancelada', 'Cancelada'),
+    ]
+
     cliente = models.ForeignKey(
         Cliente,
         on_delete=models.CASCADE,
@@ -177,7 +255,20 @@ class InscripcionClase(models.Model):
     )
 
     fecha_inscripcion = models.DateField()
-    estado = models.CharField(max_length=20)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='Activa')
+
+    # Atributos numéricos del modelo intermedio (Lab 07)
+    sesiones = models.PositiveIntegerField(default=1)
+    precio_sesion = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+    class Meta:
+        verbose_name = 'Inscripción'
+        verbose_name_plural = 'Inscripciones'
+
+    @property
+    def total(self):
+        # Subtotal de la inscripción: sesiones x precio por sesión.
+        return self.sesiones * self.precio_sesion
 
     def __str__(self):
         return f"{self.cliente.nombre} - {self.clase.nombre}"
@@ -185,9 +276,7 @@ class InscripcionClase(models.Model):
 
 # =========================================================
 # 9. MODELO ASISTENCIA
-# InscripcionClase 1 ---- N Asistencia
 # =========================================================
-# Permite controlar la asistencia del cliente a sus clases.
 class Asistencia(models.Model):
     id = models.AutoField(primary_key=True)
 
@@ -208,9 +297,7 @@ class Asistencia(models.Model):
 
 # =========================================================
 # 10. MODELO HORARIO DE CLASE
-# Clase 1 ---- N HorarioClase
 # =========================================================
-# Permite que una clase pueda tener más de un horario.
 class HorarioClase(models.Model):
     id = models.AutoField(primary_key=True)
 
@@ -224,16 +311,17 @@ class HorarioClase(models.Model):
     hora_inicio = models.TimeField()
     hora_fin = models.TimeField()
 
+    class Meta:
+        verbose_name = 'Horario de clase'
+        verbose_name_plural = 'Horarios de clase'
+
     def __str__(self):
         return f"{self.clase.nombre} - {self.dia_semana}"
 
 
 # =========================================================
 # 11. MODELO RUTINA
-# Cliente 1 ---- N Rutina
-# Entrenador 1 - N Rutina
 # =========================================================
-# Rutina de entrenamiento asignada a un cliente.
 class Rutina(models.Model):
     id = models.AutoField(primary_key=True)
 
@@ -262,7 +350,6 @@ class Rutina(models.Model):
 # =========================================================
 # 12. MODELO EJERCICIO
 # =========================================================
-# Catálogo de ejercicios disponibles.
 class Ejercicio(models.Model):
     id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
@@ -274,12 +361,8 @@ class Ejercicio(models.Model):
 
 
 # =========================================================
-# 13. MODELO RUTINA-EJERCICIO
-# MODELO INTERMEDIO N:M
-# Rutina N ---- M Ejercicio
+# 13. MODELO RUTINA-EJERCICIO (MODELO INTERMEDIO N:M)
 # =========================================================
-# Guarda los datos específicos de un ejercicio dentro
-# de una determinada rutina.
 class RutinaEjercicio(models.Model):
     rutina = models.ForeignKey(
         Rutina,
@@ -296,6 +379,10 @@ class RutinaEjercicio(models.Model):
     series = models.PositiveIntegerField(default=3)
     repeticiones = models.PositiveIntegerField(default=10)
     descanso_segundos = models.PositiveIntegerField(default=60)
+
+    class Meta:
+        verbose_name = 'Ejercicio de rutina'
+        verbose_name_plural = 'Ejercicios de rutina'
 
     def __str__(self):
         return f"{self.rutina.nombre} - {self.ejercicio.nombre}"
@@ -314,9 +401,7 @@ Rutina.add_to_class(
 
 # =========================================================
 # 14. MODELO EVALUACIÓN FÍSICA
-# Cliente 1 ---- N EvaluacionFisica
 # =========================================================
-# Guarda la evolución física de un cliente.
 class EvaluacionFisica(models.Model):
     id = models.AutoField(primary_key=True)
 
@@ -339,15 +424,17 @@ class EvaluacionFisica(models.Model):
     altura = models.DecimalField(max_digits=4, decimal_places=2)
     observaciones = models.TextField(blank=True)
 
+    class Meta:
+        verbose_name = 'Evaluación física'
+        verbose_name_plural = 'Evaluaciones físicas'
+
     def __str__(self):
         return f"{self.cliente.nombre} - {self.fecha}"
 
 
 # =========================================================
 # 15. MODELO OBJETIVO DEL CLIENTE
-# Cliente 1 ---- N ObjetivoCliente
 # =========================================================
-# Permite registrar objetivos personales de entrenamiento.
 class ObjetivoCliente(models.Model):
     id = models.AutoField(primary_key=True)
 
@@ -360,7 +447,11 @@ class ObjetivoCliente(models.Model):
     descripcion = models.CharField(max_length=200)
     fecha_inicio = models.DateField()
     fecha_meta = models.DateField(null=True, blank=True)
-    estado = models.CharField(max_length=20, default='Activo')
+    estado = models.CharField(max_length=20, default='Activa')
+
+    class Meta:
+        verbose_name = 'Objetivo del cliente'
+        verbose_name_plural = 'Objetivos de clientes'
 
     def __str__(self):
         return f"{self.cliente.nombre} - {self.descripcion}"

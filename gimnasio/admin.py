@@ -30,79 +30,50 @@ class PerfilClienteInline(admin.StackedInline):
 class InscripcionClaseInline(admin.TabularInline):
     model = InscripcionClase
     extra = 1
-    fields = ("clase", "fecha_inscripcion", "estado")
+    fields = ("clase", "fecha_inscripcion", "estado", "sesiones", "precio_sesion")
 
 
-# Primer ModelAdmin
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "nombre",
-        "dni",
-        "correo",
-        "telefono",
-    )
-
-    search_fields = (
-        "nombre",
-        "dni",
-        "correo",
-    )
-
-    inlines = (
-        PerfilClienteInline,
-        InscripcionClaseInline,
-    )
+    list_display = ("id", "nombre", "dni", "correo", "telefono")
+    search_fields = ("nombre", "dni", "correo")
+    inlines = (PerfilClienteInline, InscripcionClaseInline)
 
 
-# Segundo ModelAdmin
 @admin.register(Entrenador)
 class EntrenadorAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "nombre",
-        "especialidad",
-        "telefono",
-    )
-
-    search_fields = (
-        "nombre",
-        "especialidad",
-    )
-
-    list_filter = (
-        "especialidad",
-    )
+    list_display = ("id", "nombre", "especialidad", "telefono")
+    search_fields = ("nombre", "especialidad")
+    list_filter = ("especialidad",)
 
 
-# Tercer ModelAdmin
 @admin.register(Clase)
 class ClaseAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "nombre",
-        "horario",
-        "entrenador",
-        "sala",
-    )
+    list_display = ("id", "nombre", "horario", "cupos_disponibles", "entrenador", "sala")
+    search_fields = ("nombre", "entrenador__nombre")
+    list_filter = ("entrenador", "sala")
 
-    search_fields = (
-        "nombre",
-        "entrenador__nombre",
-    )
 
-    list_filter = (
-        "entrenador",
-        "sala",
-    )
+@admin.register(Membresia)
+class MembresiaAdmin(admin.ModelAdmin):
+    list_display = ("id", "cliente", "tipo", "precio", "fecha_inicio", "fecha_fin")
+    list_filter = ("tipo",)
+
+
+@admin.register(Pago)
+class PagoAdmin(admin.ModelAdmin):
+    list_display = ("id", "cliente", "membresia", "monto", "fecha", "metodo_pago")
+    list_filter = ("metodo_pago",)
+
+
+@admin.register(InscripcionClase)
+class InscripcionClaseAdmin(admin.ModelAdmin):
+    list_display = ("id", "cliente", "clase", "fecha_inscripcion", "estado", "sesiones", "precio_sesion", "total")
+    list_filter = ("estado", "clase")
 
 
 # Registro simple de los demás modelos
-admin.site.register(Membresia)
-admin.site.register(Pago)
 admin.site.register(PerfilCliente)
-admin.site.register(InscripcionClase)
 admin.site.register(Ejercicio)
 admin.site.register(Sala)
 admin.site.register(Asistencia)

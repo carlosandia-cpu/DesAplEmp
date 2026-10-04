@@ -113,6 +113,8 @@
                 <a href="{% url 'lista_inscripciones' %}" {% if request.resolver_match.url_name == 'lista_inscripciones' %}class="active"{% endif %}>Inscripciones</a>
                 <a href="{% url 'lista_membresias' %}" {% if request.resolver_match.url_name == 'lista_membresias' %}class="active"{% endif %}>Membresías</a>
                 <a href="{% url 'lista_pagos' %}" {% if request.resolver_match.url_name == 'lista_pagos' %}class="active"{% endif %}>Pagos</a>
+                <a href="{% url 'reporte' %}" {% if request.resolver_match.url_name == 'reporte' %}class="active"{% endif %}>Reporte</a>
+                <a href="{% url 'reporte_pagos_clases' %}" {% if request.resolver_match.url_name == 'reporte_pagos_clases' %}class="active"{% endif %}>Reporte pagos</a>
             </nav>
         </div>
     </header>

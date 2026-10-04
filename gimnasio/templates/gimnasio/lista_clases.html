@@ -8,11 +8,20 @@
         <a href="{% url 'crear_clase' %}" class="btn">+ Registrar nueva clase</a>
     </div>
 
+    {# LAB 07: filtros que usan los métodos del ClaseQuerySet #}
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
+        <a href="{% url 'lista_clases' %}" class="btn btn-sm{% if filtro != 'todas' %} btn-secondary{% endif %}">Todas</a>
+        <a href="?filtro=proximas" class="btn btn-sm{% if filtro != 'proximas' %} btn-secondary{% endif %}">Próximas</a>
+        <a href="?filtro=con_cupos" class="btn btn-sm{% if filtro != 'con_cupos' %} btn-secondary{% endif %}">Con cupos</a>
+        <a href="?filtro=proximas_con_cupos" class="btn btn-sm{% if filtro != 'proximas_con_cupos' %} btn-secondary{% endif %}">Próximas con cupos</a>
+    </div>
+
     <table>
         <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Horario</th>
+            <th>Cupos</th>
             <th>Entrenador</th>
             <th>Clases del entrenador</th>
             <th>Acciones</th>
@@ -23,6 +32,7 @@
             <td>{{ clase.id }}</td>
             <td>{{ clase.nombre }}</td>
             <td>{{ clase.horario|date:"d/m/Y H:i" }}</td>
+            <td>{{ clase.cupos_disponibles }}</td>
 
             {# ACCESO DIRECTO: Clase -> Entrenador mediante ForeignKey #}
             <td>{{ clase.entrenador.nombre }}</td>
