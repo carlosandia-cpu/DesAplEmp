@@ -1,92 +1,38 @@
-## Laboratorio 05 - Django Admin
+## Laboratorio 08: API REST con Django REST Framework
 
-En este laboratorio se configuró y personalizó el panel administrativo de Django para gestionar los modelos del sistema de gimnasio.
+La aplicación expone sus datos como una API REST en formato JSON, bajo `/api/`, con Django REST Framework. La API reutiliza los modelos y los QuerySets personalizados de la Semana 7.
 
-### Modelos registrados
-
-Los modelos registrados en Django Admin son:
-
-- Cliente
-- Membresia
-- Pago
-- Entrenador
-- Clase
-- PerfilCliente
-- InscripcionClase
-- Ejercicio
-- Sala
-- Asistencia
-- EvaluacionFisica
-- HorarioClase
-- ObjetivoCliente
-- Rutina
-- RutinaEjercicio
-
-### Personalización de ModelAdmin
-
-Se configuraron clases ModelAdmin para los siguientes modelos:
-
-- ClienteAdmin:
-  - list_display para mostrar ID, nombre, DNI, correo y teléfono.
-  - search_fields para buscar por nombre, DNI o correo.
-  - StackedInline para administrar PerfilCliente.
-  - TabularInline para administrar InscripcionClase.
-
-- EntrenadorAdmin:
-  - list_display para mostrar ID, nombre, especialidad y teléfono.
-  - search_fields para buscar por nombre o especialidad.
-  - list_filter para filtrar por especialidad.
-
-- ClaseAdmin:
-  - list_display para mostrar ID, nombre, horario, entrenador y sala.
-  - search_fields para buscar por nombre de clase o entrenador.
-  - list_filter para filtrar por entrenador y sala.
-
-### Relaciones administradas
-
-- Relación 1:1 entre Cliente y PerfilCliente mediante StackedInline.
-- Relación N:M entre Cliente y Clase mediante el modelo intermedio InscripcionClase y un TabularInline.
-- Relación 1:N entre Entrenador y Clase.
-
-La información administrada mediante Django Admin se almacena de manera persistente en la base de datos SQLite.
-
-## Refactorización de Templates (Laboratorio 6)
-
-Se refactorizó la capa de presentación del **Sistema de Gestión del Gimnasio** aplicando modularización y principios DRY:
-
-- **Herencia de Plantillas (`base.html`):** Integración de `{% extends %}` y `{% block content %}` en las plantillas de todas las entidades (*Clientes, Clases, Entrenadores, Inscripciones, Membresías, Pagos*).
-- **Filtros de Formateo:** Aplicación del filtro `|upper` en `lista_clientes.html` para estandarizar la visualización de datos.
-- **Componentes Reutilizables:** Creación del parcial `mensaje_vacio.html` cargado con `{% include %}` en los listados del sistema.
-- **Seguridad:** Verificación del autoescapado de caracteres (*auto-escaping*) nativo en Django contra inyecciones XSS.
-
-## Laboratorio 07: transacciones, consultas avanzadas y optimización
-
-Sistema de gestión de gimnasio. La entidad principal es **Cliente**, con relaciones 1:1 (`PerfilCliente`), 1:N (`Membresia` y `Pago`) y N:M con `Clase` mediante el modelo intermedio `InscripcionClase`.
-
-### Cambios en el modelo
-- `Clase.cupos_disponibles`: campo entero que se descuenta al inscribir.
-- `InscripcionClase.estado` (Activa, Completada o Cancelada), `sesiones` y `precio_sesion`.
-- Migración `0004` con los campos nuevos.
-
-### Operación transaccional
-- **Vista:** `inscribir_cliente`, en `/gimnasio/inscripciones/inscribir/`.
-- **Entidades que modifica:** `InscripcionClase`, `Pago` y `Clase`.
-- Dentro de `transaction.atomic()` crea la inscripción, registra el pago y descuenta un cupo con `F()`. Si no hay cupos, se hace rollback completo y el template muestra el error. Si todo sale bien, se aplica Post/Redirect/Get.
-
-### Reportes
-| Reporte | URL | Entidades | Técnicas |
+### Recursos expuestos
+| URL | Recurso | Tipo | Operaciones |
 |---|---|---|---|
-| Inscripciones | `/gimnasio/reporte/` | InscripcionClase y Cliente | `aggregate()`, `values().annotate()` y `annotate()` |
-| Pagos y clases | `/gimnasio/reporte/pagos-clases/` | Pago y Clase | `aggregate()`, `values().annotate()` y `annotate()` |
+| `/api/membresias/` | Membresía | ModelViewSet | GET, POST, PUT, PATCH, DELETE |
+| `/api/pagos/` | Pago | ModelViewSet | GET, POST, PUT, PATCH, DELETE |
+| `/api/clases/` | Clase | ModelViewSet | GET, POST, PUT, PATCH, DELETE |
+| `/api/clientes/` | Cliente con sus inscripciones anidadas | ReadOnlyModelViewSet | GET |
+| `/api/inscripciones/` | Inscripción con cliente y clase anidados | ReadOnlyModelViewSet | GET |
 
-### QuerySets personalizados (con `as_manager()`)
-| QuerySet | Métodos | Usado en |
-|---|---|---|
-| `ClienteQuerySet` | `con_inscripciones_activas()`, `con_membresia_vigente()`, `con_pagos_del_mes()` y `con_total_inscripciones()` | `lista_clientes` y `reporte` |
-| `ClaseQuerySet` | `proximas()`, `con_cupos()` y `con_ocupacion()` | `lista_clases` y `reporte_pagos_clases` |
+### Serializers (`gimnasio/serializers.py`)
+- `MembresiaSerializer`, con `validate_precio` (el precio debe ser mayor que cero).
+- `PagoSerializer`, con `validate_monto` (el monto debe ser mayor que cero).
+- `ClaseSerializer` y `EntrenadorSerializer`.
+- `ClienteDetalleSerializer` e `InscripcionAnidadaSerializer`: el cliente con sus inscripciones anidadas.
+- `InscripcionDetalleSerializer`, con `ClienteResumenSerializer` y `ClaseResumenSerializer` anidados.
 
-### Optimización del problema N+1
-| Pantalla | Técnica | Consultas antes | Consultas después |
+### ViewSets y rutas (`gimnasio/api_views.py` y `gimnasio/api_urls.py`)
+Los ViewSets se registran en un `DefaultRouter` y `config/urls.py` los incluye bajo `/api/`.
+
+### Filtros y acciones
+| URL | Técnica |
+|---|---|
+| `/api/membresias/?search=...&ordering=...` | `SearchFilter` (tipo y cliente) y `OrderingFilter` (precio y fechas) |
+| `/api/clases/?search=...&ordering=...` | `SearchFilter` (nombre y entrenador) y `OrderingFilter` (nombre, horario y cupos) |
+| `/api/clientes/?estado=...` | Filtro por parámetro en `get_queryset()` |
+| `/api/inscripciones/?estado=...` | Filtro por parámetro en `get_queryset()` |
+| `/api/clientes/activos/` | `@action` que reutiliza `Cliente.objects.con_inscripciones_activas()` |
+| `/api/clases/proximas/` | `@action` que reutiliza `Clase.objects.proximas().con_cupos()` |
+
+### Optimización de consultas
+| Recurso | Técnica | Antes | Después |
 |---|---|---|---|
-| Membresías | `select_related('cliente')` | 5 | 1 |
-| Clases | `select_related('entrenador').prefetch_related('entrenador__clases')` | 5 | 2 |
+| Clientes con inscripciones | `prefetch_related('inscripciones__clase')` | 16 | 3 |
+| Inscripciones con cliente y clase | `select_related('cliente', 'clase')` | 21 | 1 |

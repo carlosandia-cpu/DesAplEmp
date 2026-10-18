@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'core',
     'store',
     'gimnasio',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [

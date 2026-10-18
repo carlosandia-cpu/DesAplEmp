@@ -6,4 +6,5 @@ urlpatterns = [
     path('', include('core.urls')),
     path('store/', include('store.urls')),
     path('gimnasio/', include('gimnasio.urls')),
+    path('api/', include('gimnasio.api_urls')),
 ]
