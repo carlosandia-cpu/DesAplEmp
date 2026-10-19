@@ -1,0 +1,11 @@
+.contenedor { max-width: 800px; margin: 0 auto; padding: 24px; font-family: system-ui, Arial, sans-serif; color: #1f2937; text-align: left; }
+.resumen { color: #6b7280; }
+.lista, .sublista { list-style: none; padding: 0; }
+.tarjeta { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+.sublista li { padding: 4px 0; border-bottom: 1px dashed #e5e7eb; }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .85rem; margin-right: 6px; color: #fff; }
+.ok { background: #16a34a; }
+.agotado { background: #dc2626; }
+.alerta { background: #f97316; }
+.vacio { color: #9ca3af; font-style: italic; }
+.total { font-weight: 700; }
